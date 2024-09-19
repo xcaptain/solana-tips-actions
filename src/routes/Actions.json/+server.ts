@@ -1,7 +1,13 @@
 import { json } from '@sveltejs/kit';
-import {
-    ACTIONS_CORS_HEADERS,
-} from "@solana/actions";
+
+const ACTIONS_CORS_HEADERS: Record<string, string> = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
+    "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids",
+    "Access-Control-Expose-Headers": "X-Action-Version, X-Blockchain-Ids",
+    "Content-Type": "application/json",
+};
 
 export function GET() {
     return json({
@@ -16,3 +22,5 @@ export function GET() {
         headers: ACTIONS_CORS_HEADERS,
     });
 }
+
+export const OPTIONS = GET;
