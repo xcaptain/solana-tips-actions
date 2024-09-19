@@ -1,10 +1,10 @@
 // 生成默认的api，支持GET/POST
 
 import { json } from '@sveltejs/kit';
-import {
-    ACTIONS_CORS_HEADERS,
-    createPostResponse,
-  } from "@solana/actions";
+// import {
+//     ACTIONS_CORS_HEADERS,
+//     createPostResponse,
+//   } from "@solana/actions";
 // import { clusterApiUrl, Connection, PublicKey, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 // import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createTransferInstruction } from '@solana/spl-token';
 
@@ -23,8 +23,6 @@ export function GET({ url }) {
                 },
             ],
         },
-    }, {
-        headers: ACTIONS_CORS_HEADERS,
     });
 }
 
