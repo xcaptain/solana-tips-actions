@@ -2,20 +2,19 @@
 
 import { json } from '@sveltejs/kit';
 import {
-    ACTIONS_CORS_HEADERS,
     createPostResponse,
   } from "@solana/actions";
 // import { clusterApiUrl, Connection, PublicKey, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 // import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createTransferInstruction } from '@solana/spl-token';
 
-// const ACTIONS_CORS_HEADERS: Record<string, string> = {
-//     "Access-Control-Allow-Origin": "*",
-//     "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
-//     "Access-Control-Allow-Headers":
-//         "Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids",
-//     "Access-Control-Expose-Headers": "X-Action-Version, X-Blockchain-Ids",
-//     "Content-Type": "application/json",
-// };
+const ACTIONS_CORS_HEADERS: Record<string, string> = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
+    "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids",
+    "Access-Control-Expose-Headers": "X-Action-Version, X-Blockchain-Ids",
+    "Content-Type": "application/json",
+};
 
 /** @type {import('./$types').RequestHandler} */
 export function GET({ url }) {
