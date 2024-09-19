@@ -14,6 +14,7 @@
 		"@solana/spl-token": "^0.4.8",
 		"@solana/web3.js": "^1.95.3",
 		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-cloudflare": "^4.7.2",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"svelte": "^4.2.7",
