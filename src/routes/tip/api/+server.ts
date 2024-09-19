@@ -33,9 +33,6 @@ export function GET({ url }) {
 
 export const OPTIONS = GET;
 
-import {
-    createPostResponse,
-} from "@solana/actions";
 import { clusterApiUrl, Connection, PublicKey, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createTransferInstruction } from '@solana/spl-token';
 
@@ -87,13 +84,14 @@ export async function POST({ url, request }) {
         instructions: [transferIx, transferFeeIx],
     }).compileToV0Message();
     const tx = new VersionedTransaction(message);
-
-    const payload = await createPostResponse({
-        fields: {
-            transaction: tx,
-            message: "transaction created",
-        }
-    })
+    const fields = {
+        transaction: tx,
+        message: "transaction created",
+    }
+    const payload = {
+        transaction: Buffer.from(fields.transaction.serialize()).toString("base64"),
+        message: fields.message,
+    };
     return json(payload, {
         headers: ACTIONS_CORS_HEADERS,
     });
