@@ -23,8 +23,6 @@ export function GET({ url }) {
                 },
             ],
         },
-    }, {
-        headers: ACTIONS_CORS_HEADERS,
     });
 }
 
