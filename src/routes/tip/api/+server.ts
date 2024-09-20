@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getTransferCheckedInstruction } from '@solana-program/token';
+import { getTransferCheckedInstruction, findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS, ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import { getTransferSolInstruction } from '@solana-program/system';
 import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner } from '@solana/web3.js';
 
@@ -45,27 +45,48 @@ export async function POST({ url, request }) {
 
     const toWallet = address<string>('DQe6m1yBWprrwR8SV5m4wAVhHAtaTRrBf16W8msg7Dqw');
     const usdtMintAddress = address<string>('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
+    const feeAddress = address('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A');
 
-    // const transferIx = getTransferCheckedInstruction(
-    //     {
-    //         source: sender,
-    //         mint: usdtMintAddress,
-    //         destination: toWallet,
-    //         authority: sender,
-    //         amount: amount * 10 ** 6,
-    //         decimals: 6,
-    //     }
-    // );
-    // const transferFeeIx = getTransferCheckedInstruction(
-    //     {
-    //         source: sender,
-    //         mint: usdtMintAddress,
-    //         destination: address<string>('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A'),
-    //         authority: sender,
-    //         amount: 0.1 * 10 ** 6,
-    //         decimals: 6,
-    //     }
-    // );
+    const [fromAccount] = await findAssociatedTokenPda({
+        mint: usdtMintAddress,
+        owner: sender,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    }, {
+        programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
+    });
+
+    const [toAccount] = await findAssociatedTokenPda({
+        mint: usdtMintAddress,
+        owner: toWallet,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    });
+
+    const [feeAccount] = await findAssociatedTokenPda({
+        mint: usdtMintAddress,
+        owner: feeAddress,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    });
+
+    const usdtTransferIx1 = getTransferCheckedInstruction(
+        {
+            source: fromAccount,
+            mint: usdtMintAddress,
+            destination: toAccount,
+            authority: sender,
+            amount: amount * 10 ** 6,
+            decimals: 6,
+        }
+    );
+    const usdtTransferIx2 = getTransferCheckedInstruction(
+        {
+            source: fromAccount,
+            mint: usdtMintAddress,
+            destination: feeAccount,
+            authority: sender,
+            amount: 0.1 * 10 ** 6,
+            decimals: 6,
+        }
+    );
 
     // const transferSolIx1 = getTransferSolInstruction(
     //     {
@@ -81,16 +102,16 @@ export async function POST({ url, request }) {
         createTransactionMessage({ version: 0 }),
         tx => (setTransactionMessageFeePayer(sender, tx)),
         tx => (setTransactionMessageLifetimeUsingBlockhash(recentBlockhash, tx)),
-        // tx => appendTransactionMessageInstructions(
-        //     [transferIx, transferFeeIx], tx,
-        // )
-        tx => appendTransactionMessageInstruction(
-            getTransferSolInstruction({
-                amount: lamports(1_000_000_000n),
-                destination: toWallet,
-                source: senderSigner,
-            }), tx
-        ),
+        tx => appendTransactionMessageInstructions(
+            [usdtTransferIx1, usdtTransferIx2], tx,
+        )
+        // tx => appendTransactionMessageInstruction(
+        //     getTransferSolInstruction({
+        //         amount: lamports(1_000_000_000n),
+        //         destination: toWallet,
+        //         source: senderSigner,
+        //     }), tx
+        // ),
     );
     const signedTx = await partiallySignTransactionMessageWithSigners(message);
     // const txb64 = Buffer.from(signedTx.messageBytes).toString('base64');
