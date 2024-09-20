@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getTransferCheckedInstruction } from '@solana-program/token';
-import { createSolanaRpc, partiallySignTransactionMessageWithSigners, decodeTransactionMessage, address, compileTransactionMessage, getBase64EncodedWireTransaction, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, getAddressFromPublicKey, devnet, type RpcDevnet, type SolanaRpcApiDevnet } from '@solana/web3.js';
+import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet } from '@solana/web3.js';
 
 const ACTIONS_CORS_HEADERS: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
@@ -65,7 +65,7 @@ export async function POST({ url, request }) {
         }
     );
     const rpc = createSolanaRpc(devnet('https://api.devnet.solana.com'));
-    const {value: recentBlockhash} = await rpc
+    const { value: recentBlockhash } = await rpc
         .getLatestBlockhash()
         .send();
     const message = pipe(
