@@ -1,6 +1,6 @@
-// 生成默认的api，支持GET/POST
-
 import { json } from '@sveltejs/kit';
+import { getTransferCheckedInstruction } from '@solana-program/token';
+import { createSolanaRpc, partiallySignTransactionMessageWithSigners, decodeTransactionMessage, address, compileTransactionMessage, getBase64EncodedWireTransaction, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, getAddressFromPublicKey, devnet, type RpcDevnet, type SolanaRpcApiDevnet } from '@solana/web3.js';
 
 const ACTIONS_CORS_HEADERS: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
@@ -33,64 +33,52 @@ export function GET({ url }) {
 
 export const OPTIONS = GET;
 
-import { clusterApiUrl, Connection, PublicKey, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createTransferInstruction } from '@solana/spl-token';
-
-
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ url, request }) {
     const amount = Number(url.searchParams.get("amount")) || 0.1;
     const body = await request.json();
-    const sender = new PublicKey(body.account);
-    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+    const sender = address<string>(body.account);
 
-    const toWallet = new PublicKey('DQe6m1yBWprrwR8SV5m4wAVhHAtaTRrBf16W8msg7Dqw');
-    const usdtMintAddress = new PublicKey('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
+    const toWallet = address<string>('DQe6m1yBWprrwR8SV5m4wAVhHAtaTRrBf16W8msg7Dqw');
+    const usdtMintAddress = address<string>('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
 
-    const fromTokenAccount = await getAssociatedTokenAddress(
-        usdtMintAddress,
-        sender
+    const transferIx = getTransferCheckedInstruction(
+        {
+            source: sender,
+            mint: usdtMintAddress,
+            destination: toWallet,
+            authority: sender,
+            amount: amount * 10 ** 6,
+            decimals: 6,
+        }
     );
-    const toTokenAccount = await getAssociatedTokenAddress(
-        usdtMintAddress,
-        toWallet
+    const transferFeeIx = getTransferCheckedInstruction(
+        {
+            source: sender,
+            mint: usdtMintAddress,
+            destination: address<string>('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A'),
+            authority: sender,
+            amount: 0.1 * 10 ** 6,
+            decimals: 6,
+        }
     );
-    const feeTokenAccount = await getAssociatedTokenAddress(
-        usdtMintAddress,
-        new PublicKey('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A')
-    );
-    const transferIx = createTransferInstruction(
-        fromTokenAccount,
-        toTokenAccount,
-        sender,
-        amount * 10 ** 6, // USDT有6位小数
-        [],
-        TOKEN_PROGRAM_ID
-    );
-    const transferFeeIx = createTransferInstruction(
-        fromTokenAccount,
-        feeTokenAccount,
-        sender,
-        0.1 * 10 ** 6, // USDT有6位小数
-        [],
-        TOKEN_PROGRAM_ID
-    );
-    let recentBlockhash = await connection
+    const rpc = createSolanaRpc(devnet('https://api.devnet.solana.com'));
+    const {value: recentBlockhash} = await rpc
         .getLatestBlockhash()
-        .then((res) => res.blockhash);
-    const message = new TransactionMessage({
-        payerKey: sender,
-        recentBlockhash,
-        instructions: [transferIx, transferFeeIx],
-    }).compileToV0Message();
-    const tx = new VersionedTransaction(message);
-    const fields = {
-        transaction: tx,
-        message: "transaction created",
-    }
+        .send();
+    const message = pipe(
+        createTransactionMessage({ version: 0 }),
+        tx => (setTransactionMessageFeePayer(sender, tx)),
+        tx => (setTransactionMessageLifetimeUsingBlockhash(recentBlockhash, tx)),
+        tx => appendTransactionMessageInstructions(
+            [transferIx, transferFeeIx], tx,
+        ),
+    );
+    // const tx = compileTransactionMessage(message);
+    const tx = await partiallySignTransactionMessageWithSigners(message);
     const payload = {
-        transaction: Buffer.from(fields.transaction.serialize()).toString("base64"),
-        message: fields.message,
+        transaction: Buffer.from(tx.messageBytes).toString("base64"),
+        message: "transaction created",
     };
     return json(payload, {
         headers: ACTIONS_CORS_HEADERS,
