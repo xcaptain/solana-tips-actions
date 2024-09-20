@@ -9,6 +9,8 @@ const ACTIONS_CORS_HEADERS: Record<string, string> = {
         "Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids",
     "Access-Control-Expose-Headers": "X-Action-Version, X-Blockchain-Ids",
     "Content-Type": "application/json",
+    "X-Blockchain-Ids": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+    "X-Action-Version": "1",
 };
 
 /** @type {import('./$types').RequestHandler} */
