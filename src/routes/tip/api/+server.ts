@@ -64,7 +64,7 @@ export async function POST({ url, request }) {
             decimals: 6,
         }
     );
-    const rpc = createSolanaRpc(devnet('https://api.devnet.solana.com'));
+    const rpc = createSolanaRpc(devnet('https://late-small-spree.solana-devnet.quiknode.pro/21d45707a53ab78cf53d160e1ac2dc804b19f3ac'));
     const { value: recentBlockhash } = await rpc
         .getLatestBlockhash()
         .send();
