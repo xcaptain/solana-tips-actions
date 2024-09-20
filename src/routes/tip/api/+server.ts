@@ -16,7 +16,7 @@ const ACTIONS_CORS_HEADERS: Record<string, string> = {
 /** @type {import('./$types').RequestHandler} */
 export function GET({ url }) {
     return json({
-        icon: "/static/favicon.png", // Local icon path
+        icon: "https://solana-tips-actions.pages.dev/favicon.png", // Local icon path
         title: "Tip to Joey",
         description: "Support Joey by donating USDT-DEV.",
         label: "Tip",
