@@ -77,10 +77,11 @@ export async function POST({ url, request }) {
         ),
     );
     const signedTx = await partiallySignTransactionMessageWithSigners(message);
-    const serializedTransaction = getBase64EncodedWireTransaction(signedTx);
+    const txb64 = Buffer.from(signedTx.messageBytes).toString('base64');
+    // const serializedTransaction = getBase64EncodedWireTransaction(signedTx);
 
     const payload = {
-        transaction: serializedTransaction,
+        transaction: txb64,
         message: "transaction created",
     };
     return json(payload, {
