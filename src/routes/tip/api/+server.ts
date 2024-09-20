@@ -38,6 +38,7 @@ export const OPTIONS = GET;
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ url, request }) {
+    globalThis.isSecureContext = true;
     const amount = Number(url.searchParams.get("amount")) || 0.1;
     const body = await request.json();
     const sender = address<string>(body.account);

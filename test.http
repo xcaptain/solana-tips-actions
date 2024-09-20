@@ -7,7 +7,7 @@ Content-Type: application/json
 
 ### test local
 
-POST http://localhost:5173/tip/api
+POST http://localhost:8788/tip/api
 Content-Type: application/json
 
 {
