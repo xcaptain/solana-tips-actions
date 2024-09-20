@@ -7,7 +7,7 @@ Content-Type: application/json
 
 ### test local
 
-POST http://localhost:8788/tip/api
+POST http://localhost:5173/tip/api
 Content-Type: application/json
 
 {
@@ -21,3 +21,13 @@ GET http://localhost:8788/actions.json
 ### test online
 
 GET https://solana-tips-actions.pages.dev/actions.json
+
+
+### test solana/web3.js v1
+
+POST http://localhost:5174/test
+Content-Type: application/json
+
+{
+    "account": "FYw5bVnWS4DN3V8uxK2DKe7FbjYUGAmFBrk9da8T6NRT"
+}

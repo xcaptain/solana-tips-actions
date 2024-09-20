@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { getTransferCheckedInstruction, findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS, ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
+import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS, ASSOCIATED_TOKEN_PROGRAM_ADDRESS, getTransferInstruction } from '@solana-program/token';
 import { getTransferSolInstruction } from '@solana-program/system';
-import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner } from '@solana/web3.js';
+import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner, signTransactionMessageWithSigners } from '@solana/web3.js';
 
 const ACTIONS_CORS_HEADERS: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
@@ -72,24 +72,20 @@ export async function POST({ url, request }) {
         programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
     });
 
-    const usdtTransferIx1 = getTransferCheckedInstruction(
+    const usdtTransferIx1 = getTransferInstruction(
         {
             source: fromAccount,
-            mint: usdtMintAddress,
             destination: toAccount,
-            authority: fromAccount,
+            authority: sender,
             amount: amount * 10 ** 6,
-            decimals: 6,
         }
     );
-    const usdtTransferIx2 = getTransferCheckedInstruction(
+    const usdtTransferIx2 = getTransferInstruction(
         {
             source: fromAccount,
-            mint: usdtMintAddress,
             destination: feeAccount,
-            authority: fromAccount,
+            authority: sender,
             amount: 0.1 * 10 ** 6,
-            decimals: 6,
         }
     );
 
