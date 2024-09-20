@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS, ASSOCIATED_TOKEN_PROGRAM_ADDRESS, getTransferInstruction } from '@solana-program/token';
 import { getTransferSolInstruction } from '@solana-program/system';
-import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner, signTransactionMessageWithSigners } from '@solana/web3.js';
+import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner, signTransactionMessageWithSigners, compileTransaction } from '@solana/web3.js';
 
 const ACTIONS_CORS_HEADERS: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
@@ -114,9 +114,9 @@ export async function POST({ url, request }) {
         //     }), tx
         // ),
     );
-    const signedTx = await partiallySignTransactionMessageWithSigners(message);
+    const myTx = compileTransaction(message);
     // const txb64 = Buffer.from(signedTx.messageBytes).toString('base64');
-    const serializedTransaction = getBase64EncodedWireTransaction(signedTx);
+    const serializedTransaction = getBase64EncodedWireTransaction(myTx);
 
     const payload = {
         transaction: serializedTransaction,
