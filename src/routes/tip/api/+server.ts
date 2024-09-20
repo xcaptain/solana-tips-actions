@@ -76,7 +76,7 @@ export async function POST({ url, request }) {
         {
             source: fromAccount,
             destination: toAccount,
-            authority: senderSigner,
+            authority: sender,
             amount: amount * 10 ** 6,
         }
     );
@@ -84,7 +84,7 @@ export async function POST({ url, request }) {
         {
             source: fromAccount,
             destination: feeAccount,
-            authority: senderSigner,
+            authority: sender,
             amount: 0.1 * 10 ** 6,
         }
     );
