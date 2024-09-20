@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getTransferCheckedInstruction } from '@solana-program/token';
-import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet } from '@solana/web3.js';
+import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction } from '@solana/web3.js';
 
 const ACTIONS_CORS_HEADERS: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
@@ -16,7 +16,7 @@ const ACTIONS_CORS_HEADERS: Record<string, string> = {
 /** @type {import('./$types').RequestHandler} */
 export function GET({ url }) {
     return json({
-        icon: "https://solana-tips-actions.pages.dev/favicon.png", // Local icon path
+        icon: "https://solana-tips-actions.pages.dev/favicon.png",
         title: "Tip to Joey",
         description: "Support Joey by donating USDT-DEV.",
         label: "Tip",
@@ -76,10 +76,11 @@ export async function POST({ url, request }) {
             [transferIx, transferFeeIx], tx,
         ),
     );
-    // const tx = compileTransactionMessage(message);
-    const tx = await partiallySignTransactionMessageWithSigners(message);
+    const signedTx = await partiallySignTransactionMessageWithSigners(message);
+    const serializedTransaction = getBase64EncodedWireTransaction(signedTx);
+
     const payload = {
-        transaction: Buffer.from(tx.messageBytes).toString("base64"),
+        transaction: serializedTransaction,
         message: "transaction created",
     };
     return json(payload, {

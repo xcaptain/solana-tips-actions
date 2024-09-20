@@ -1,0 +1,23 @@
+POST https://solana-tips-actions.pages.dev/tip/api
+Content-Type: application/json
+
+{
+    "account": "FYw5bVnWS4DN3V8uxK2DKe7FbjYUGAmFBrk9da8T6NRT"
+}
+
+### test local
+
+POST http://localhost:5173/tip/api
+Content-Type: application/json
+
+{
+    "account": "FYw5bVnWS4DN3V8uxK2DKe7FbjYUGAmFBrk9da8T6NRT"
+}
+
+### test new
+
+GET http://localhost:8788/actions.json
+
+### test online
+
+GET https://solana-tips-actions.pages.dev/actions.json
