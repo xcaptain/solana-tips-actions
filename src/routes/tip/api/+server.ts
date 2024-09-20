@@ -60,12 +60,16 @@ export async function POST({ url, request }) {
         mint: usdtMintAddress,
         owner: toWallet,
         tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    }, {
+        programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
     });
 
     const [feeAccount] = await findAssociatedTokenPda({
         mint: usdtMintAddress,
         owner: feeAddress,
         tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    }, {
+        programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
     });
 
     const usdtTransferIx1 = getTransferCheckedInstruction(
