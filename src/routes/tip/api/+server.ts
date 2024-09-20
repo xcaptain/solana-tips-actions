@@ -77,7 +77,7 @@ export async function POST({ url, request }) {
             source: fromAccount,
             mint: usdtMintAddress,
             destination: toAccount,
-            authority: sender,
+            authority: fromAccount,
             amount: amount * 10 ** 6,
             decimals: 6,
         }
@@ -87,7 +87,7 @@ export async function POST({ url, request }) {
             source: fromAccount,
             mint: usdtMintAddress,
             destination: feeAccount,
-            authority: sender,
+            authority: fromAccount,
             amount: 0.1 * 10 ** 6,
             decimals: 6,
         }
