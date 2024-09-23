@@ -31,6 +31,16 @@ export function GET({ url }) {
                     label: "Tip 2 USDT-DEV",
                     href: `${url.href}?amount=2`,
                 },
+                {
+                    label: "Tip custom USDT-DEV",
+                    href: `${url.href}?amount={amount}`,
+                    parameters: [
+                        {
+                            name: "amount", // field name
+                            label: "Enter a custom USDT amount" // text input placeholder
+                        }
+                    ]
+                }
             ],
         },
     }, {
