@@ -4,4 +4,5 @@ made by sveltekit + @solana/web3.js@rc
 
 ## TODO
 
-- [ ] check account is pda
+- [ ] tip 0.1, 1, 2 USDC
+- [ ] submit to registry

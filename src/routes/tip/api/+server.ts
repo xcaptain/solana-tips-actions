@@ -44,7 +44,7 @@ export async function POST({ url, request }) {
     const sender = address<string>(body.account);
     const senderSigner = createNoopSigner(sender);
 
-    const toWallet = address<string>('DX5g5G6AzZ4ZbCoH3fB1nqpL7UvACiYT1emrnbmbusV6');
+    const toWallet = address<string>('DQe6m1yBWprrwR8SV5m4wAVhHAtaTRrBf16W8msg7Dqw');
     const usdtMintAddress = address<string>('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
     const feeAddress = address('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A');
 
@@ -86,7 +86,7 @@ export async function POST({ url, request }) {
         const createPdaIx = await getCreateAssociatedTokenInstructionAsync({
             payer: senderSigner,
             ata: toAccount,
-            owner: sender,
+            owner: toWallet,
             mint: usdtMintAddress,
         });
         ixs.push(createPdaIx);
