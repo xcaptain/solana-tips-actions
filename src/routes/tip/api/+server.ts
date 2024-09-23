@@ -115,11 +115,11 @@ export async function POST({ url, request }) {
         // ),
     );
     const myTx = compileTransaction(message);
-    // const txb64 = Buffer.from(signedTx.messageBytes).toString('base64');
-    const serializedTransaction = getBase64EncodedWireTransaction(myTx);
+    const txb64 = Buffer.from(myTx).toString('base64');
+    // const serializedTransaction = getBase64EncodedWireTransaction(myTx);
 
     const payload = {
-        transaction: serializedTransaction,
+        transaction: txb64,
         message: "transaction created",
     };
     return json(payload, {
