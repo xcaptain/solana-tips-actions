@@ -48,46 +48,46 @@ export async function POST({ url, request }) {
     const usdtMintAddress = address<string>('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
     const feeAddress = address('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A');
 
-    const [fromAccount] = await findAssociatedTokenPda({
-        mint: usdtMintAddress,
-        owner: sender,
-        tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }, {
-        programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
-    });
+    // const [fromAccount] = await findAssociatedTokenPda({
+    //     mint: usdtMintAddress,
+    //     owner: sender,
+    //     tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    // }, {
+    //     programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
+    // });
 
-    const [toAccount] = await findAssociatedTokenPda({
-        mint: usdtMintAddress,
-        owner: toWallet,
-        tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }, {
-        programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
-    });
+    // const [toAccount] = await findAssociatedTokenPda({
+    //     mint: usdtMintAddress,
+    //     owner: toWallet,
+    //     tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    // }, {
+    //     programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
+    // });
 
-    const [feeAccount] = await findAssociatedTokenPda({
-        mint: usdtMintAddress,
-        owner: feeAddress,
-        tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }, {
-        programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
-    });
+    // const [feeAccount] = await findAssociatedTokenPda({
+    //     mint: usdtMintAddress,
+    //     owner: feeAddress,
+    //     tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    // }, {
+    //     programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
+    // });
 
-    const usdtTransferIx1 = getTransferInstruction(
-        {
-            source: fromAccount,
-            destination: toAccount,
-            authority: sender,
-            amount: amount * 10 ** 6,
-        }
-    );
-    const usdtTransferIx2 = getTransferInstruction(
-        {
-            source: fromAccount,
-            destination: feeAccount,
-            authority: sender,
-            amount: 0.1 * 10 ** 6,
-        }
-    );
+    // const usdtTransferIx1 = getTransferInstruction(
+    //     {
+    //         source: fromAccount,
+    //         destination: toAccount,
+    //         authority: sender,
+    //         amount: amount * 10 ** 6,
+    //     }
+    // );
+    // const usdtTransferIx2 = getTransferInstruction(
+    //     {
+    //         source: fromAccount,
+    //         destination: feeAccount,
+    //         authority: sender,
+    //         amount: 0.1 * 10 ** 6,
+    //     }
+    // );
 
     // const transferSolIx1 = getTransferSolInstruction(
     //     {
@@ -103,23 +103,30 @@ export async function POST({ url, request }) {
         createTransactionMessage({ version: 0 }),
         tx => (setTransactionMessageFeePayer(sender, tx)),
         tx => (setTransactionMessageLifetimeUsingBlockhash(recentBlockhash, tx)),
+        // tx => appendTransactionMessageInstructions(
+        //     [usdtTransferIx1, usdtTransferIx2], tx,
+        // )
         tx => appendTransactionMessageInstructions(
-            [usdtTransferIx1, usdtTransferIx2], tx,
-        )
-        // tx => appendTransactionMessageInstruction(
-        //     getTransferSolInstruction({
-        //         amount: lamports(1_000_000_000n),
-        //         destination: toWallet,
-        //         source: senderSigner,
-        //     }), tx
-        // ),
+            [
+                getTransferSolInstruction({
+                    amount: lamports(100_000_000n),
+                    destination: toWallet,
+                    source: senderSigner,
+                }),
+                getTransferSolInstruction({
+                    amount: lamports(100_000_000n),
+                    destination: feeAddress,
+                    source: senderSigner,
+                }),
+            ], tx
+        ),
     );
     const myTx = compileTransaction(message);
-    const txb64 = Buffer.from(myTx.messageBytes).toString('base64');
-    // const serializedTransaction = getBase64EncodedWireTransaction(myTx);
+    // const txb64 = Buffer.from(myTx.messageBytes).toString('base64');
+    const serializedTransaction = getBase64EncodedWireTransaction(myTx);
 
     const payload = {
-        transaction: txb64,
+        transaction: serializedTransaction,
         message: "transaction created",
     };
     return json(payload, {
