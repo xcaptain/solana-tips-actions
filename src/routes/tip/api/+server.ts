@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS, ASSOCIATED_TOKEN_PROGRAM_ADDRESS, getTransferInstruction } from '@solana-program/token';
+import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS, ASSOCIATED_TOKEN_PROGRAM_ADDRESS, getTransferInstruction, identifyTokenAccount, fetchToken, getCreateAssociatedTokenInstructionAsync } from '@solana-program/token';
 import { getTransferSolInstruction } from '@solana-program/system';
-import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner, signTransactionMessageWithSigners, compileTransaction } from '@solana/web3.js';
+import { createSolanaRpc, partiallySignTransactionMessageWithSigners, address, createTransactionMessage, pipe, setTransactionMessageFeePayer, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstructions, devnet, getBase64EncodedWireTransaction, lamports, appendTransactionMessageInstruction, createNoopSigner, signTransactionMessageWithSigners, compileTransaction, type IInstruction } from '@solana/web3.js';
 
 const ACTIONS_CORS_HEADERS: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
@@ -48,6 +48,10 @@ export async function POST({ url, request }) {
     const usdtMintAddress = address<string>('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
     const feeAddress = address('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A');
 
+    const rpc = createSolanaRpc(devnet('https://late-small-spree.solana-devnet.quiknode.pro/21d45707a53ab78cf53d160e1ac2dc804b19f3ac'));
+
+    // ensure pda exists
+    const ixs: IInstruction[] = [];
     const [fromAccount] = await findAssociatedTokenPda({
         mint: usdtMintAddress,
         owner: sender,
@@ -55,6 +59,18 @@ export async function POST({ url, request }) {
     }, {
         programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
     });
+    try {
+        await fetchToken(rpc, fromAccount);
+    } catch {
+        // pda 不存在，需要帮忙创建一下
+        const createPdaIx = await getCreateAssociatedTokenInstructionAsync({
+            payer: senderSigner,
+            ata: fromAccount,
+            owner: sender,
+            mint: usdtMintAddress,
+        });
+        ixs.push(createPdaIx);
+    }
 
     const [toAccount] = await findAssociatedTokenPda({
         mint: usdtMintAddress,
@@ -63,6 +79,18 @@ export async function POST({ url, request }) {
     }, {
         programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
     });
+    try {
+        await fetchToken(rpc, toAccount);
+    } catch {
+        // pda 不存在，需要帮忙创建一下
+        const createPdaIx = await getCreateAssociatedTokenInstructionAsync({
+            payer: senderSigner,
+            ata: toAccount,
+            owner: toWallet,
+            mint: usdtMintAddress,
+        });
+        ixs.push(createPdaIx);
+    }
 
     const [feeAccount] = await findAssociatedTokenPda({
         mint: usdtMintAddress,
@@ -71,6 +99,18 @@ export async function POST({ url, request }) {
     }, {
         programAddress: ASSOCIATED_TOKEN_PROGRAM_ADDRESS
     });
+    try {
+        await fetchToken(rpc, feeAccount);
+    } catch {
+        // pda 不存在，需要帮忙创建一下
+        const createPdaIx = await getCreateAssociatedTokenInstructionAsync({
+            payer: senderSigner,
+            ata: feeAccount,
+            owner: feeAddress,
+            mint: usdtMintAddress,
+        });
+        ixs.push(createPdaIx);
+    }
 
     const usdtTransferIx1 = getTransferInstruction(
         {
@@ -90,6 +130,7 @@ export async function POST({ url, request }) {
             multiSigners: [senderSigner],
         }
     );
+    ixs.push(usdtTransferIx1, usdtTransferIx2);
 
     // const transferSolIx1 = getTransferSolInstruction(
     //     {
@@ -97,7 +138,6 @@ export async function POST({ url, request }) {
     //         destination: toWallet,
     //     }
     // )
-    const rpc = createSolanaRpc(devnet('https://late-small-spree.solana-devnet.quiknode.pro/21d45707a53ab78cf53d160e1ac2dc804b19f3ac'));
     const { value: recentBlockhash } = await rpc
         .getLatestBlockhash()
         .send();
@@ -106,7 +146,7 @@ export async function POST({ url, request }) {
         tx => (setTransactionMessageFeePayer(sender, tx)),
         tx => (setTransactionMessageLifetimeUsingBlockhash(recentBlockhash, tx)),
         tx => appendTransactionMessageInstructions(
-            [usdtTransferIx1, usdtTransferIx2], tx,
+            ixs, tx,
         )
         // tx => appendTransactionMessageInstructions(
         //     [
@@ -135,3 +175,7 @@ export async function POST({ url, request }) {
         headers: ACTIONS_CORS_HEADERS,
     });
 }
+
+// async function getOrCreatePda(payer: Address<string>, mint: Address<string>, owner: Address<string>) {
+
+// }
