@@ -27,6 +27,10 @@ export function GET({ url }) {
                     label: "Tip 1 USDT-DEV",
                     href: `${url.href}?amount=1`,
                 },
+                {
+                    label: "Tip 2 USDT-DEV",
+                    href: `${url.href}?amount=2`,
+                },
             ],
         },
     }, {
