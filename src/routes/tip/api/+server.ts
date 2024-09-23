@@ -44,7 +44,7 @@ export async function POST({ url, request }) {
     const sender = address<string>(body.account);
     const senderSigner = createNoopSigner(sender);
 
-    const toWallet = address<string>('DQe6m1yBWprrwR8SV5m4wAVhHAtaTRrBf16W8msg7Dqw');
+    const toWallet = address<string>('J7oj4QcNcPm3JP6yTLPXZfTZfmpAyb2B28J28p8n2pH6');
     const usdtMintAddress = address<string>('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
     const feeAddress = address('FDjn87xPsLiXwakFygi4uEdet568o7A22UboxrUCwu7A');
 
